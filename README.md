@@ -1,2 +1,5 @@
 # kub-guac
-Simple kuber 4 home task DYVolovodov
+
+Home task DYVolovodov@Greenatom.ru 4 learning Kubernetis by nov.2025
+
+Simple kuber for estimate 3 (normal)
