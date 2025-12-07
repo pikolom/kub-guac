@@ -1,12 +1,52 @@
+#Под вэбухи
 apiVersion: v1
 kind: Pod
 metadata:
-  name: guacamole
+  name: guacamole-app
+spec:
+  containers:
+  - name: guacamole
+    image: guacamole/guacamole:1.6.0
+
+#Под сервера авакады
+apiVersion: v1
+kind: Pod
+metadata:
+  name: guacamole-guacd
 spec:
   containers:
   - name: guacd
     image: guacamole/guacd:1.6.0
-  - name: guacamole
-    image: guacamole/guacamole:1.6.0
+
+#Под датабазы
+apiVersion: v1
+kind: Pod
+metadata:
+  name: guacamole-db
+spec:
+  containers:
   - name: postgres
     image: postgres:15.2-alpine
+  
+#  volumes:
+#  - name: data
+#    configMap:
+#      defaultMode: 755
+#      name: data
+#  - name: drive
+#    configMap:
+#      defaultMode: 755
+#      name: drive
+#  - name: guac
+#    configMap:
+#      defaultMode: 755
+#      name: guac
+#  - name: init
+#    configMap:
+#      defaultMode: 755
+#      name: init
+#  - name: record
+#      configMap:
+#      defaultMode: 755
+#      name: record
+  
