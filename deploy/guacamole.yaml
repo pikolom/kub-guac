@@ -27,12 +27,12 @@ spec:
   containers:
   - name: postgres
     image: postgres:15.2-alpine
+  volumes:
+  - name: db_data
+    configMap:
+      defaultMode: 755
+      name: data
   
-#  volumes:
-#  - name: data
-#    configMap:
-#      defaultMode: 755
-#      name: data
 #  - name: drive
 #    configMap:
 #      defaultMode: 755
