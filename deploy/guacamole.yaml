@@ -1,52 +1,89 @@
-#Под вэбухи
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: guacamole-app
+  name: guac
+  labels:
+    app: guac
 spec:
-  containers:
-  - name: guacamole
-    image: guacamole/guacamole:1.6.0
+  replicas: 2
+  selector:
+    matchLabels:
+      app: guac
+  template:
+    metadata:
+      labels:
+        app: guac
+    spec:
+      containers:
+      - name: guacamole
+        image: guacamole/guacamole:1.6.0
+---
+############################################################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guacd
+  labels:
+    app: guacd
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: guacd
+  template:
+    metadata:
+      labels:
+        app: guacd
+    spec:
+      containers:
+      - name: guacd
+        image: guacamole/guacd:1.6.0
+---
+############################################################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15.2-alpine
+#        ports:
+#          - containerPort: 5432
+#            protocol: TCP
+---
 
-#Под сервера авакады
-apiVersion: v1
-kind: Pod
-metadata:
-  name: guacamole-guacd
-spec:
-  containers:
-  - name: guacd
-    image: guacamole/guacd:1.6.0
 
-#Под датабазы
-apiVersion: v1
-kind: Pod
-metadata:
-  name: guacamole-db
-spec:
-  containers:
-  - name: postgres
-    image: postgres:15.2-alpine
-  volumes:
-  - name: db_data
-    configMap:
-      defaultMode: 755
-      name: data
-  
+
+
+
+
+
 #  - name: drive
 #    configMap:
-#      defaultMode: 755
+#      defaultMode: 0755
 #      name: drive
 #  - name: guac
 #    configMap:
-#      defaultMode: 755
+#      defaultMode: 0755
 #      name: guac
 #  - name: init
 #    configMap:
-#      defaultMode: 755
+#      defaultMode: 0755
 #      name: init
 #  - name: record
 #      configMap:
-#      defaultMode: 755
+#      defaultMode: 0755
 #      name: record
   
