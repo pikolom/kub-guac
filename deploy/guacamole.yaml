@@ -1,53 +1,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: guac
-  labels:
-    app: guac
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: guac
-  template:
-    metadata:
-      labels:
-        app: guac
-    spec:
-      containers:
-      - name: guacamole
-        image: guacamole/guacamole:1.6.0
----
-############################################################################################
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: guacd
-  labels:
-    app: guacd
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: guacd
-  template:
-    metadata:
-      labels:
-        app: guacd
-    spec:
-      containers:
-      - name: guacd
-        image: guacamole/guacd:1.6.0
----
-############################################################################################
-apiVersion: apps/v1
-kind: Deployment
-metadata:
   name: postgres
   labels:
     app: postgres
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: postgres
@@ -59,31 +17,112 @@ spec:
       containers:
       - name: postgres
         image: postgres:15.2-alpine
-#        ports:
-#          - containerPort: 5432
-#            protocol: TCP
+        env:
+        - name: PGDATA
+          value: "/var/lib/postgresql/data/guacamole"
+        - name: POSTGRES_DB
+          value: "guacamole_db"
+        - name: POSTGRES_PASSWORD
+          value: "ChooseYourOwnPasswordHere1234"
+        - name: POSTGRES_USER
+          value: "guacamole_user"
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data/guacamole
+          name: v-data
+          readOnly: false
+      volumes:
+      - hostPath:
+          path: ./data
+        name: v-data
 ---
-
-
-
-
-
-
-
-#  - name: drive
-#    configMap:
-#      defaultMode: 0755
-#      name: drive
-#  - name: guac
-#    configMap:
-#      defaultMode: 0755
-#      name: guac
-#  - name: init
-#    configMap:
-#      defaultMode: 0755
-#      name: init
-#  - name: record
-#      configMap:
-#      defaultMode: 0755
-#      name: record
-  
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guacd
+  labels:
+    app: guacd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: guacd
+  template:
+    metadata:
+      labels:
+        app: guacd
+    spec:
+      containers:
+      - name: guacd
+        image: guacamole/guacd:1.6.0
+        volumeMounts:
+        - mountPath: /drive
+          name: v-drive
+          readOnly: false
+        - mountPath: /record
+          name: v-record
+          readOnly: false
+      volumes:
+      - hostPath:
+          path: ./drive
+        name: v-drive
+      - hostPath:
+          path: ./record
+        name: v-record
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guac
+  labels:
+    app: guac
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: guac
+  template:
+    metadata:
+      labels:
+        app: guac
+    spec:
+      containers:
+      - name: guacamole
+        image: guacamole/guacamole:1.6.0
+        env:
+        - name: GUACD_HOSTNAME
+          value: "guacd"
+        - name: POSTGRESQL_DATABASE
+          value: "guacamole_db"
+        - name: POSTGRESQL_HOSTNAME
+          value: "postgres"
+        - name: POSTGRESQL_PASSWORD
+          value: "ChooseYourOwnPasswordHere1234"
+        - name: POSTGRESQL_USERNAME
+          value: "guacamole_user"
+        - name: RECORDING_SEARCH_PATH
+          value: "/record"
+        volumeMounts:
+        - mountPath: /guac
+          name: v-guac
+          readOnly: false
+        - mountPath: /record
+          name: v-record
+          readOnly: false
+      volumes:
+      - hostPath:
+          path: ./guac
+        name: v-guac
+      - hostPath:
+          path: ./record
+        name: v-record
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guac-ip
+spec:
+  selector:
+    app: guac
+  ports:
+  - port: 8080
+    targetPort: 8080
